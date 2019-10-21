@@ -38,16 +38,20 @@ safetail'' (x:xs) = xs
 halve :: [a] -> ([a],[a])
 halve xs | length(xs) `mod` 2 == 0 = (take (length(xs) `div` 2) xs , drop (length(xs) `div` 2) xs)
          | otherwise = error "List isn't of even length!"
-        
--- TO DO: Figure out how to do this with only pattern matching
 
 -- Exercise 5
 enc :: Int -> String -> String
 enc _ [] = [] 
 enc n (x:xs) = [toEnum(fromEnum x + n)] ++ enc n xs
 
--- TO DO: Figure out how to do this
 encrypt :: Int -> String -> (String, String -> String)
 encrypt n xs = (enc n xs, enc (-n))
 
 -- Exercise 6
+luhnDouble :: Int -> Int
+luhnDouble n | ((n * 2) >= 9) = (n * 2) - 9
+             | otherwise = (n * 2)
+
+luhn :: Int -> Int -> Int -> Int -> Bool
+luhn n x y z | (luhnDouble(n) + x + luhnDouble(y) + z) `mod` 10 == 0 = True
+             | otherwise = False

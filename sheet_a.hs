@@ -35,7 +35,7 @@ commonSubsequences' xss [] = []
 commonSubsequences' xss ys = [ xs' | xs' <- xss, ys' <- subsequences ys, xs' == ys' ]
 
 commonSubsequences :: Eq a => [[a]] -> [[a]] -> [[a]]
-commonSubsequences css (xs:[]:xss) = commonSubsequences'' css xs
+commonSubsequences css (xs:[]:xss) = commonSubsequences'' 
 commonSubsequences css (xs:_:xss) = commonSubsequences' css xs
 
 longestCommonSubsequence :: Eq a => [[a]] -> [a]

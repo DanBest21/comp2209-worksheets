@@ -29,5 +29,9 @@ subsequences xs i n | i == n && (n-1) == 0 = []
                     | i == n               = subsequences xs 0 (n-1)
                     | otherwise            = subsequence xs (i+1) n : subsequences xs (i+1) n
 
+commonSubsequences :: Eq a => [[a]] -> [[a]] -> [[a]]
+commonSubsequences xss [] = []
+commonSubsequences xss yss = [ xs | xs <- xss, ys <- yss, xs == ys ]
+
 -- longestCommonSubsequence :: Eq a => [[a]] -> [a]
--- longestCommonSubsequence xss = [ x | xs' <- xss, xs <- subsequences xs' (length xs'), x <- xs ]
+-- longestCommonSubsequence [xs,ys,_] = commonSubsequences (subsequences xs) (subsequences ys)  

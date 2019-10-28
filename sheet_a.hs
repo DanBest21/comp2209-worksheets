@@ -21,17 +21,26 @@ approxSqrt d epsilon | d < 0        = error "d cannot be negative!"
                      | otherwise    = approxSqrt' 1 d epsilon
 
 -- Exercise A3
-subsequence :: Eq a => [a] -> Int -> Int -> [a]
-subsequence xs i n = [ x | (x, index) <- zip xs [1..], index <= n, index >= i ] 
+-- Method taken from Michael McKenna's answer that can be found at https://stackoverflow.com/questions/32575630/powerset-of-a-set-with-list-comprehension-in-haskell
+subsequences :: Eq a => [a] -> [[a]]
+subsequences [] = [[]]
+subsequences (x:xs) = [ x:ys | ys <- subsequences xs ] ++ subsequences xs
 
-subsequences :: Eq a => [a] -> Int -> Int -> [[a]]
-subsequences xs i n | i == n && (n-1) == 0 = []
-                    | i == n               = subsequences xs 0 (n-1)
-                    | otherwise            = subsequence xs (i+1) n : subsequences xs (i+1) n
+commonSubsequences'' :: Eq a => [a] -> [a] -> [[a]]
+commonSubsequences'' xs [] = [xs]
+commonSubsequences'' xs ys = [ xs' | xs' <- subsequences xs, ys' <- subsequences ys, xs' == ys' ]
+
+commonSubsequences' :: Eq a => [[a]] -> [a] -> [[a]]
+commonSubsequences' xss [] = []
+commonSubsequences' xss ys = [ xs' | xs' <- xss, ys' <- subsequences ys, xs' == ys' ]
 
 commonSubsequences :: Eq a => [[a]] -> [[a]] -> [[a]]
-commonSubsequences xss [] = []
-commonSubsequences xss yss = [ xs | xs <- xss, ys <- yss, xs == ys ]
+commonSubsequences css (xs:[]:xss) = commonSubsequences'' css xs
+commonSubsequences css (xs:_:xss) = commonSubsequences' css xs
 
--- longestCommonSubsequence :: Eq a => [[a]] -> [a]
--- longestCommonSubsequence [xs,ys,_] = commonSubsequences (subsequences xs) (subsequences ys)  
+longestCommonSubsequence :: Eq a => [[a]] -> [a]
+longestCommonSubsequence xss = 
+-- longestCommonSubsequence ([]:xss) = []
+-- longestCommonSubsequence (xs:[]:xss) = xs
+-- longestCommonSubsequence (xs:ys:[]:xss) = head (commonSubsequences' xs ys)
+-- longestCommonSubsequence (xs:ys:zs:xss) = head (commonSubsequences (commonSubsequences' xs ys) zs)

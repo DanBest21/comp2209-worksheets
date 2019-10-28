@@ -26,21 +26,15 @@ subsequences :: Eq a => [a] -> [[a]]
 subsequences [] = [[]]
 subsequences (x:xs) = [ x:ys | ys <- subsequences xs ] ++ subsequences xs
 
-commonSubsequences'' :: Eq a => [a] -> [a] -> [[a]]
-commonSubsequences'' xs [] = [xs]
-commonSubsequences'' xs ys = [ xs' | xs' <- subsequences xs, ys' <- subsequences ys, xs' == ys' ]
-
-commonSubsequences' :: Eq a => [[a]] -> [a] -> [[a]]
-commonSubsequences' xss [] = []
-commonSubsequences' xss ys = [ xs' | xs' <- xss, ys' <- subsequences ys, xs' == ys' ]
-
 commonSubsequences :: Eq a => [[a]] -> [[a]] -> [[a]]
-commonSubsequences css (xs:[]:xss) = commonSubsequences'' 
-commonSubsequences css (xs:_:xss) = commonSubsequences' css xs
+commonSubsequences [] yss = yss
+commonSubsequences (xs:xss) [] = commonSubsequences xss (subsequences xs)  
+commonSubsequences (xs:xss) yss = commonSubsequences xss [ xs' | xs' <- subsequences xs, ys <- yss, xs' == ys ]
+
+longestList :: Eq a => [[a]] -> [a] -> [a]
+longestList [] ys = ys
+longestList (xs:xss) ys | length xs >= length ys = longestList xss xs 
+                        | otherwise              = longestList xss ys
 
 longestCommonSubsequence :: Eq a => [[a]] -> [a]
-longestCommonSubsequence xss = 
--- longestCommonSubsequence ([]:xss) = []
--- longestCommonSubsequence (xs:[]:xss) = xs
--- longestCommonSubsequence (xs:ys:[]:xss) = head (commonSubsequences' xs ys)
--- longestCommonSubsequence (xs:ys:zs:xss) = head (commonSubsequences (commonSubsequences' xs ys) zs)
+longestCommonSubsequence xss = longestList (commonSubsequences xss []) []

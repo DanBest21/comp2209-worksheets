@@ -19,3 +19,15 @@ approxSqrt :: Double -> Double -> Double
 approxSqrt d epsilon | d < 0        = error "d cannot be negative!"
                      | epsilon <= 0 = error "epsilon cannot be negative or equal to zero!"
                      | otherwise    = approxSqrt' 1 d epsilon
+
+-- Exercise A3
+subsequence :: Eq a => [a] -> Int -> Int -> [a]
+subsequence xs i n = [ x | (x, index) <- zip xs [1..], index <= n, index >= i ] 
+
+subsequences :: Eq a => [a] -> Int -> Int -> [[a]]
+subsequences xs i n | i == n && (n-1) == 0 = []
+                    | i == n               = subsequences xs 0 (n-1)
+                    | otherwise            = subsequence xs (i+1) n : subsequences xs (i+1) n
+
+-- longestCommonSubsequence :: Eq a => [[a]] -> [a]
+-- longestCommonSubsequence xss = [ x | xs' <- xss, xs <- subsequences xs' (length xs'), x <- xs ]

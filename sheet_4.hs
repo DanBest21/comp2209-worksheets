@@ -1,1 +1,76 @@
 -- Exercise 1
+all' :: Eq a => (a -> Bool) -> [a] -> Bool
+all' f xs = (filter f xs) == xs
+
+any' :: Eq a => (a -> Bool) -> [a] -> Bool
+any' f xs = (filter f xs) /= []
+
+takeWhile' :: Eq a => (a -> Bool) -> [a] -> [a]
+takeWhile' f = foldr (\x xs -> if f x then x:xs else []) []
+
+dropWhile' :: Eq a => (a -> Bool) -> [a] -> [a]
+dropWhile' f xs = foldr (\x xs' b -> if f x && b then xs' True else x:xs' False) (const []) xs True
+
+-- Exercise 2
+concatInt :: Int -> Int -> Int
+concatInt x y | x < 0     = (10 * x) - y
+              | otherwise = (10 * x) + y
+
+dec2Int :: [Int] -> Int
+dec2Int xs = foldl concatInt 0 xs
+
+-- Exercise 3
+curry' :: ((a, b) -> c) -> (a -> (b -> c)) 
+curry' f = \x y -> f (x, y)
+
+uncurry' :: (a -> (b -> c)) -> ((a, b) -> c)
+uncurry' f = \(x, y) -> f x y
+
+-- Exercise 4
+unfold :: (a -> Bool) -> (a -> b) -> (a -> a) -> a -> [b]
+unfold p h t x | p x       = []
+               | otherwise = h x : unfold p h t (t x)
+
+int2bin :: Int -> [Int]
+int2bin x = reverse (unfold (<= 0) (`mod` 2) (`div` 2) x)
+
+chop :: String -> Int -> [String]
+chop s x = unfold (== []) (take x) (drop x) s
+
+-- TO DO: Fix this
+-- map' :: (a -> b) -> [a] -> [b]
+-- map' f xs = unfold (== []) (\x -> f x) (drop 1) xs  
+
+iterate' :: Eq a => (a -> a) -> a -> [a]
+iterate' f x = unfold (\x -> x /= x) (\x -> x) (f) x 
+
+-- Exercise 5
+altMap :: (a -> b) -> (a -> b) -> [a] -> [b]
+altMap f g [] = []
+altMap f g [x] = [f x]
+altMap f g (x:y:xs) = f x : g y : altMap f g xs
+
+-- Exercise 6
+luhnDouble :: Int -> Int
+luhnDouble n | d >= 9 = d - 9
+             | otherwise = d 
+            where d = (n * 2)
+
+luhn :: [Int] -> Bool
+luhn xs = (sum . altMap (*1) luhnDouble $ (reverse xs)) `mod` 10 == 0
+
+-- Exercise 7
+data Tree a = Leaf | Node (Tree a) a (Tree a) deriving Show
+
+toTree :: Ord a => [a] -> Tree a
+toTree [] = Leaf
+toTree xs = Node (toTree (take half xs)) (xs !! half) (toTree (drop (half + 1) xs))
+    where half = length xs `div` 2
+
+-- Exercise 8
+data Nat = Zero | Succ Nat deriving (Eq, Ord, Show, Read)
+
+even' :: Nat -> Bool
+even' n = n
+
+-- Exercise 9

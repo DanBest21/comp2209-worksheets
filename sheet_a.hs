@@ -46,3 +46,7 @@ longestList (xs:xss) ys | length xs >= length ys = longestList xss xs
 longestCommonSubsequence :: Eq a => [[a]] -> [a]
 longestCommonSubsequence [] = []
 longestCommonSubsequence (xs:xss) = longestList (commonSubsequences ([xs] ++ xss) (subsequences (shortestList xss xs))) []
+
+-- Exercise A4
+
+-- Exercise A5

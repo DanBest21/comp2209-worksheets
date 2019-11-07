@@ -5,10 +5,10 @@ all' f xs = (filter f xs) == xs
 any' :: Eq a => (a -> Bool) -> [a] -> Bool
 any' f xs = (filter f xs) /= []
 
-takeWhile' :: Eq a => (a -> Bool) -> [a] -> [a]
+takeWhile' :: (a -> Bool) -> [a] -> [a]
 takeWhile' f = foldr (\x xs -> if f x then x:xs else []) []
 
-dropWhile' :: Eq a => (a -> Bool) -> [a] -> [a]
+dropWhile' :: (a -> Bool) -> [a] -> [a]
 dropWhile' f xs = foldr (\x xs' b -> if f x && b then xs' True else x:xs' False) (const []) xs True
 
 -- Exercise 2
@@ -70,7 +70,17 @@ toTree xs = Node (toTree (take half xs)) (xs !! half) (toTree (drop (half + 1) x
 -- Exercise 8
 data Nat = Zero | Succ Nat deriving (Eq, Ord, Show, Read)
 
-even' :: Nat -> Bool
-even' n = n
+-- even' :: Nat -> Bool
+-- even' n = n
+
+-- odd' :: Nat -> Bool
+-- odd' n = n
+
+add' :: Nat -> Nat -> Nat
+add' Zero m = m
+add' (Succ n) m = Succ (add n m)
+
+-- mult :: Nat -> Nat -> Nat
+-- mult 
 
 -- Exercise 9

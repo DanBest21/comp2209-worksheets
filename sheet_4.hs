@@ -70,17 +70,28 @@ toTree xs = Node (toTree (take half xs)) (xs !! half) (toTree (drop (half + 1) x
 -- Exercise 8
 data Nat = Zero | Succ Nat deriving (Eq, Ord, Show, Read)
 
--- even' :: Nat -> Bool
--- even' n = n
+even' :: Nat -> Bool
+even' Zero = True
+even' (Succ Zero) = False
+even' (Succ (Succ n)) = even' n
 
--- odd' :: Nat -> Bool
--- odd' n = n
+odd' :: Nat -> Bool
+odd' n = not (even' n)
 
 add' :: Nat -> Nat -> Nat
 add' Zero m = m
-add' (Succ n) m = Succ (add n m)
+add' (Succ n) m = Succ (add' n m)
 
--- mult :: Nat -> Nat -> Nat
--- mult 
+mult :: Nat -> Nat -> Nat
+mult (Succ Zero) m = m
+mult (Succ n) m = add' m (mult n m)
 
 -- Exercise 9
+data RInt = Zero' | Succ' RInt | Pred RInt deriving Show
+
+normalise :: RInt -> RInt
+normalise Zero' = Zero'
+normalise (Succ' (Pred n)) = normalise n
+normalise (Pred (Succ' n)) = normalise n
+normalise (Succ' n) = Succ' (normalise n)
+normalise (Pred n) = Pred (normalise n)

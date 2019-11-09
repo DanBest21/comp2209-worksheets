@@ -89,9 +89,57 @@ mult (Succ n) m = add' m (mult n m)
 -- Exercise 9
 data RInt = Zero' | Succ' RInt | Pred RInt deriving Show
 
+countOperations :: RInt -> Int -> Int -> RInt
+countOperations Zero' s p = normalise' (s-p)
+countOperations (Succ' n) s p = countOperations n (s+1) p
+countOperations (Pred n) s p = countOperations n s (p+1)  
+
+normalise' :: Int -> RInt
+normalise' n | n == 0    = Zero'
+             | n > 0     = Succ' (normalise' (n-1))
+             | otherwise = Pred (normalise' (n+1))
+
 normalise :: RInt -> RInt
-normalise Zero' = Zero'
-normalise (Succ' (Pred n)) = normalise n
-normalise (Pred (Succ' n)) = normalise n
-normalise (Succ' n) = Succ' (normalise n)
-normalise (Pred n) = Pred (normalise n)
+normalise n = countOperations n 0 0
+
+even'' :: RInt -> Bool
+even'' Zero' = True
+even'' (Succ' Zero') = False
+even'' (Succ' (Succ' n)) = even'' n
+even'' (Pred Zero') = False
+even'' (Pred (Pred n)) = even'' n
+
+even_ :: RInt -> Bool
+even_ n = even'' (normalise n)
+
+odd_ :: RInt -> Bool
+odd_ n = not (even_ n)
+
+add'' :: RInt -> RInt -> RInt
+add'' Zero' m = m
+add'' (Succ' n) m = Succ' (add_ n m)
+add'' (Pred n) m = Pred (add_ n m)
+
+add_ :: RInt -> RInt -> RInt
+add_ n m = add'' (normalise n) (normalise m)
+
+isNegative :: RInt -> Bool
+isNegative (Pred n) = True
+isNegative n = False
+
+makeNegative :: RInt -> RInt
+makeNegative Zero' = Zero'
+makeNegative (Succ' n) = Pred (makeNegative n)
+makeNegative (Pred n) = Pred (makeNegative n)
+
+mult' :: RInt -> RInt -> RInt
+mult' (Succ' Zero') m = m
+mult' (Pred Zero') m = m
+mult' (Succ' n) m = add'' m (mult' n m)
+mult' (Pred n) m = add'' m (mult' n m)
+
+mult_ :: RInt -> RInt -> RInt
+mult_ n m | (isNegative v1) /= (isNegative v2) = makeNegative (mult' v1 v2)
+          | otherwise                          = mult' v1 v2 
+          where v1 = normalise n
+                v2 = normalise m

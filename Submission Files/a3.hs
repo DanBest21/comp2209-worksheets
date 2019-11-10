@@ -10,12 +10,9 @@
 
 module Exercises (longestCommonSubsequence) where
 
--- Exercise A3
--- Method taken from Michael McKenna's answer that can be found at https://stackoverflow.com/questions/32575630/powerset-of-a-set-with-list-comprehension-in-haskell
-subsequences :: Eq a => [a] -> [[a]]
-subsequences [] = [[]]
-subsequences (x:xs) = [ x:ys | ys <- subsequences xs ] ++ subsequences xs
+import Data.List
 
+-- Exercise A3
 commonElements :: Eq a => [a] -> [a] -> [a]
 commonElements xs ys = [ x | x <- xs, elem x ys ]
  

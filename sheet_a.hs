@@ -1,3 +1,6 @@
+import Data.List
+import Data.Function
+
 -- Exercise A1
 histogram' :: Int -> [Int] -> [Int]
 histogram' n [] = []
@@ -21,11 +24,6 @@ approxSqrt d epsilon | d < 0        = error "d cannot be negative!"
                      | otherwise    = approxSqrt' 1 d epsilon
 
 -- Exercise A3
--- Method taken from Michael McKenna's answer that can be found at https://stackoverflow.com/questions/32575630/powerset-of-a-set-with-list-comprehension-in-haskell
-subsequences :: Eq a => [a] -> [[a]]
-subsequences [] = [[]]
-subsequences (x:xs) = [ x:ys | ys <- subsequences xs ] ++ subsequences xs
-
 commonElements :: Eq a => [a] -> [a] -> [a]
 commonElements xs ys = [ x | x <- xs, elem x ys ]
  
@@ -48,5 +46,11 @@ longestCommonSubsequence [] = []
 longestCommonSubsequence (xs:xss) = longestList (commonSubsequences ([xs] ++ xss) (subsequences (shortestList xss xs))) []
 
 -- Exercise A4
+type Metric a = Point a -> Point a -> Double
+type Point a = (a, a)
+
+neighbours :: Int -> Metric a -> Point a -> [Point a] -> [Point a]
+neighbours k d p xs = map fst $ take k $ sortBy (compare `on` snd) [ (x, d p x) | x <- xs ]
 
 -- Exercise A5
+findBonding :: Eq a => (a -> a -> Bool) -> [a] -> Maybe [(a, a)]

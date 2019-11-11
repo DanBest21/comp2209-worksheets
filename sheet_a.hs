@@ -67,9 +67,6 @@ getPossibleBondings p x xs = [ (x, y) | y <- filter (p x) xs, x /= y ]
 getAllPossibleBondings :: Eq a => (a -> a -> Bool) -> [a] -> [(a, a)]
 getAllPossibleBondings p xs = nub [ (x, y) | x' <- xs, (x, y) <- getPossibleBondings p x' xs ]
 
-checkBondings :: Eq a => [a] -> [(a, a)] -> Bool
-checkBondings xs ys = length xs == length [ (x, y) | x <- xs, (x', y) <- ys, x == x' ]
-
 fromMaybePair :: Eq a => Maybe (a, a) -> (a, a)
 fromMaybePair (Just a) = a
 fromMaybePair Nothing = error "Cannot find bonding!"
@@ -93,6 +90,6 @@ findBondings p xs ys | snd minBonding /= 0 = selectedBondings ++ findBondings p 
                       y = snd selectedBonding
 
 findBonding :: Eq a => (a -> a -> Bool) -> [a] -> Maybe [(a, a)]
-findBonding p xs | checkBondings xs bondings = Just (bondings)
-                 | otherwise                 = Nothing
+findBonding p xs | length xs == length bondings = Just (bondings)
+                 | otherwise                    = Nothing
                 where bondings = findBondings p xs (getAllPossibleBondings p xs)

@@ -1,5 +1,6 @@
 import Data.List
 import Data.Function
+import Data.Tuple
 
 -- Exercise A1
 histogram' :: Int -> [Int] -> [Int]
@@ -50,7 +51,48 @@ type Metric a = Point a -> Point a -> Double
 type Point a = (a, a)
 
 neighbours :: Int -> Metric a -> Point a -> [Point a] -> [Point a]
-neighbours k d p xs = map fst $ take k $ sortBy (compare `on` snd) [ (x, d p x) | x <- xs ]
+neighbours k d p xs | k >= 0     = map fst $ take k $ sortBy (compare `on` snd) [ (x, d p x) | x <- xs ]
+                    | otherwise = error  "k cannot be negative!"
 
 -- Exercise A5
+getNumberOfPairs :: Eq a => a -> [(a, a)] -> Int
+getNumberOfPairs x xs = length [ (x', y) | (x', y) <- xs, (x' == x) ]
+
+minBondings :: Eq a => [a] -> [(a, a)] -> (a, Int)
+minBondings xs ys = head $ sortBy (compare `on` snd) [ (x, y) | x <- xs, let y = getNumberOfPairs x ys ]
+
+getPossibleBondings :: Eq a => (a -> a -> Bool) -> a -> [a] -> [(a, a)]
+getPossibleBondings p x xs = [ (x, y) | y <- filter (p x) xs, x /= y ]
+
+getAllPossibleBondings :: Eq a => (a -> a -> Bool) -> [a] -> [(a, a)]
+getAllPossibleBondings p xs = nub [ (x, y) | x' <- xs, (x, y) <- getPossibleBondings p x' xs ]
+
+checkBondings :: Eq a => [a] -> [(a, a)] -> Bool
+checkBondings xs ys = length xs == length [ (x, y) | x <- xs, (x', y) <- ys, x == x' ]
+
+fromMaybePair :: Eq a => Maybe (a, a) -> (a, a)
+fromMaybePair (Just a) = a
+fromMaybePair Nothing = error "Cannot find bonding!"
+
+takeBonding :: Eq a => a -> [(a, a)] -> [(a, a)]
+takeBonding x xs = [firstPair, secondPair]
+                where firstPair  = fromMaybePair (find (\(y, _) -> y == x) xs)
+                      secondPair = swap firstPair
+
+removeBondings :: Eq a => (a, a) -> [(a, a)] -> [(a, a)]
+removeBondings (x, y) xs = [ (x', y') | (x', y') <- xs, x' /= x && x' /= y, y' /= x && y' /= y ]
+
+findBondings :: Eq a => (a -> a -> Bool) -> [a] -> [(a, a)] -> [(a, a)]
+findBondings p [] ys = []
+findBondings p xs ys | snd minBonding /= 0 = selectedBondings ++ findBondings p (filter (`notElem` [x, y]) xs) (removeBondings selectedBonding ys)
+                     | otherwise           = []
+                where minBonding = minBondings xs ys
+                      selectedBondings = takeBonding (fst minBonding) ys
+                      selectedBonding = head selectedBondings
+                      x = fst selectedBonding
+                      y = snd selectedBonding
+
 findBonding :: Eq a => (a -> a -> Bool) -> [a] -> Maybe [(a, a)]
+findBonding p xs | checkBondings xs bondings = Just (bondings)
+                 | otherwise                 = Nothing
+                where bondings = findBondings p xs (getAllPossibleBondings p xs)

@@ -17,7 +17,6 @@ type Point a = (a,a)
 type Metric a = (Point a) -> (Point a) -> Double
 
 -- Exercise A4
-
 neighbours ::  Int -> Metric a -> Point a -> [Point a] -> [Point a]
 neighbours k d p xs | k >= 0     = map fst $ take k $ sortBy (compare `on` snd) [ (x, d p x) | x <- xs ]
                     | otherwise = error  "k cannot be negative!"

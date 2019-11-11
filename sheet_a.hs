@@ -1,6 +1,7 @@
 import Data.List
 import Data.Function
 import Data.Tuple
+import Data.Maybe
 
 -- Exercise A1
 histogram' :: Int -> [Int] -> [Int]
@@ -65,15 +66,11 @@ getPossibleBondings :: Eq a => (a -> a -> Bool) -> a -> [a] -> [(a, a)]
 getPossibleBondings p x xs = [ (x, y) | y <- filter (p x) xs, x /= y ]
 
 getAllPossibleBondings :: Eq a => (a -> a -> Bool) -> [a] -> [(a, a)]
-getAllPossibleBondings p xs = nub [ (x, y) | x' <- xs, (x, y) <- getPossibleBondings p x' xs ]
-
-fromMaybePair :: Eq a => Maybe (a, a) -> (a, a)
-fromMaybePair (Just a) = a
-fromMaybePair Nothing = error "Cannot find bonding!"
+getAllPossibleBondings p xs = [ (x, y) | x' <- xs, (x, y) <- getPossibleBondings p x' xs ]
 
 takeBonding :: Eq a => a -> [(a, a)] -> [(a, a)]
 takeBonding x xs = [firstPair, secondPair]
-                where firstPair  = fromMaybePair (find (\(y, _) -> y == x) xs)
+                where firstPair  = fromJust (find (\(y, _) -> y == x) xs)
                       secondPair = swap firstPair
 
 removeBondings :: Eq a => (a, a) -> [(a, a)] -> [(a, a)]

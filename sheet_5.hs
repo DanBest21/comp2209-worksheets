@@ -19,10 +19,10 @@ data Expr = Val Int | Add Expr Expr | Sub Expr Expr
 foldExpr :: (Int -> Int -> Int) -> Int -> Expr -> Int
 foldExpr f v (Val x) = f x v
 foldExpr f v (Add l r) = f v (foldExpr f (foldExpr f v l) r)
-foldExpr f v (Sub l r) = f v (foldExpr f (foldExpr f v l) r)
+foldExpr f v (Sub l r) = f v (foldExpr (-) (foldExpr f v r) l)
 
--- eval :: Expr -> Int
--- eval e = foldExpr () e
+eval :: Expr -> Int
+eval e = foldExpr (+) 0 e
 
 -- size :: Expr -> Int
 -- size e = length $ foldExpr (:) [] e

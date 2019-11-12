@@ -37,9 +37,8 @@ int2bin x = reverse (unfold (<= 0) (`mod` 2) (`div` 2) x)
 chop :: String -> Int -> [String]
 chop s x = unfold (== []) (take x) (drop x) s
 
--- TO DO: Fix this
--- map' :: (a -> b) -> [a] -> [b]
--- map' f xs = unfold (== []) (\x -> f x) (drop 1) xs  
+map' :: Eq a => (a -> b) -> [a] -> [b]
+map' f xs = unfold (== []) (f . head) (drop 1) xs  
 
 iterate' :: Eq a => (a -> a) -> a -> [a]
 iterate' f x = unfold (\x -> x /= x) (\x -> x) (f) x 

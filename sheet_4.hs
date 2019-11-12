@@ -13,8 +13,7 @@ dropWhile' f xs = foldr (\x xs' b -> if f x && b then xs' True else x:xs' False)
 
 -- Exercise 2
 concatInt :: Int -> Int -> Int
-concatInt x y | x < 0     = (10 * x) - y
-              | otherwise = (10 * x) + y
+concatInt x y = (10 * x) + y
 
 dec2Int :: [Int] -> Int
 dec2Int xs = foldl concatInt 0 xs
@@ -56,7 +55,7 @@ luhnDouble n | d >= 9 = d - 9
             where d = (n * 2)
 
 luhn :: [Int] -> Bool
-luhn xs = (sum . altMap (*1) luhnDouble $ (reverse xs)) `mod` 10 == 0
+luhn xs = (sum . altMap (id) luhnDouble $ (reverse xs)) `mod` 10 == 0
 
 -- Exercise 7
 data Tree a = Leaf | Node (Tree a) a (Tree a) deriving Show

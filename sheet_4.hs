@@ -50,7 +50,7 @@ altMap f g (x:y:xs) = f x : g y : altMap f g xs
 
 -- Exercise 6
 luhnDouble :: Int -> Int
-luhnDouble n | d >= 9 = d - 9
+luhnDouble n | d > 9 = d - 9
              | otherwise = d 
             where d = (n * 2)
 

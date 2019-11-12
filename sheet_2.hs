@@ -49,7 +49,7 @@ encrypt n xs = (enc n xs, enc (-n))
 
 -- Exercise 6
 luhnDouble :: Int -> Int
-luhnDouble n | ((n * 2) >= 9) = (n * 2) - 9
+luhnDouble n | ((n * 2) > 9) = (n * 2) - 9
              | otherwise = (n * 2)
 
 luhn :: Int -> Int -> Int -> Int -> Bool

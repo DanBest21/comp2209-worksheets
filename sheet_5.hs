@@ -16,16 +16,16 @@ flatten t = foldTree (:) [] t
 -- Exercise 3
 data Expr = Val Int | Add Expr Expr | Sub Expr Expr
 
-foldExpr :: (Int -> Int -> Int) -> Int -> Expr -> Int
-foldExpr f v (Val x) = f x v
-foldExpr f v (Add l r) = f v (foldExpr f (foldExpr f v l) r)
-foldExpr f v (Sub l r) = f v (foldExpr (-) (foldExpr f v r) l)
+foldExpr :: (Int -> Int -> Int) -> (Int -> Int -> Int) -> Int -> Expr -> Int
+foldExpr f f' v (Val x) = f x v
+foldExpr f f' v (Add l r) = f (foldExpr f f' (foldExpr f f' v l) r) v
+foldExpr f f' v (Sub l r) = f' (foldExpr f f' (foldExpr f f' v l) r) v
 
 eval :: Expr -> Int
-eval e = foldExpr (+) 0 e
+eval e = foldExpr (+) (-) 0 e
 
--- size :: Expr -> Int
--- size e = length $ foldExpr (:) [] e
+size :: Expr -> Int
+size e = foldExpr (\x acc -> acc + 1) (\x acc -> acc + 1) 0 e
 
 -- Exercise 4
 data Prop = Const Bool | Var Char | Not Prop | And Prop Prop | Imply Prop Prop

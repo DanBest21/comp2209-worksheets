@@ -18,8 +18,8 @@ data Expr = Val Int | Add Expr Expr | Sub Expr Expr
 
 foldExpr :: (Int -> Int -> Int) -> (Int -> Int -> Int) -> Int -> Expr -> Int
 foldExpr f f' v (Val x) = f x v
-foldExpr f f' v (Add l r) = f (foldExpr f f' (foldExpr f f' v l) r) v
-foldExpr f f' v (Sub l r) = f' (foldExpr f f' (foldExpr f f' v l) r) v
+foldExpr f f' v (Add l r) = f (foldExpr f f' v l) (foldExpr f f' v r)
+foldExpr f f' v (Sub l r) = f' (foldExpr f f' v l) (foldExpr f' f v r)
 
 eval :: Expr -> Int
 eval e = foldExpr (+) (-) 0 e

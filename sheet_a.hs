@@ -111,6 +111,13 @@ getParentValue [] = Nothing
 getParentValue (L x c r : ts) = Just (x)
 getParentValue (R x c r : ts) = Just (x)
 
+getRootValue :: Trail a -> Maybe a
+getRootValue [] = Nothing
+getRootValue [L x c r, _] = Just (x)
+getRootValue [R x c r, _] = Just (x)
+getRootValue (L x c r : ts) = getRootValue ts
+getRootValue (R x c r : ts) = getRootValue ts
+
 mkTree :: Ord a => [a] -> Zipper a
 mkTree = foldl (\z -> \x -> insertFromCurrentNode x z) (Leaf,[])
 
@@ -122,7 +129,8 @@ insertFromCurrentNode n (Node l x c r, []) | n < x     = insertFromCurrentNode n
 insertFromCurrentNode n (Node l x c r, ts) | bLeft     = insertFromCurrentNode n $ goLeft(t, ts)
                                            | bRight    = insertFromCurrentNode n $ goRight(t, ts)
                                            | otherwise = insertFromCurrentNode n $ goUp(t, ts)
-      where parent = fromJust $ getParentValue(ts)
+      where parent = fromJust $ getParentValue ts
+            root = fromJust $ getRootValue ts
             bParent = x < parent
             bParent' = n < parent
             bValue = n < x

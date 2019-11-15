@@ -72,7 +72,7 @@ data Direction a = L (LTree a) | R (LTree a)
 type Trail a = [Direction a]
 type Zipper a = (LTree a, Trail a)
 
-goLeft, goRight, goUp :: (LTree a, Trail a) -> (LTree a, Trail a)
+goLeft, goRight, goUp :: Zipper a -> Zipper a
 goLeft (Node_ l r, ts) = (l, L r:ts)
 goRight (Node_ l r, ts) = (r, R l:ts)
 goUp (t, L r : ts) = (Node_ t r, ts)

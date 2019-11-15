@@ -90,3 +90,40 @@ findBonding :: Eq a => (a -> a -> Bool) -> [a] -> Maybe [(a, a)]
 findBonding p xs | length xs == length bondings = Just (bondings)
                  | otherwise                    = Nothing
                 where bondings = findBondings p xs (getAllPossibleBondings p xs)
+
+-- Exercise A6
+data VTree a = Leaf | Node (VTree a) a Int (VTree a) deriving (Show)
+
+data Direction a = L a Int (VTree a) | R a Int (VTree a) deriving (Show)
+type Trail a = [Direction a]
+type Zipper a = (VTree a, Trail a) 
+
+goLeft, goRight, goUp :: Zipper a -> Zipper a
+goLeft (Node (Node l' x' c' r') x c r, ts) = (Node l' x' (c'+1) r', L x c r : ts)
+goLeft (Node l x c r, ts) = (l, L x c r : ts)
+goRight (Node l x c (Node l' x' c' r'), ts) = (Node l' x' (c'+1) r', R x c l : ts)
+goRight (Node l x c r, ts) = (r, R x c l : ts)
+goUp (t, L x c r : ts) = (Node t x (c+1) r, ts)
+goUp (t, R x c l : ts) = (Node l x (c+1) t, ts)
+
+getParentValue :: Trail a -> Maybe a
+getParentValue [] = Nothing
+getParentValue [L x c r] = Just (x)
+getParentValue [R x c r] = Just (x)
+
+mkTree :: Ord a => [a] -> Zipper a
+mkTree = foldl (\z -> \x -> insertFromCurrentNode x z) (Leaf,[])
+
+insertFromCurrentNode :: Ord a => a -> Zipper a -> Zipper a
+insertFromCurrentNode n (Leaf, ts) = ((Node (Leaf) n 1 (Leaf)), ts)
+insertFromCurrentNode n (Node l x c r, []) | n < x                  = insertFromCurrentNode n $ goLeft(t, [])
+                                           | otherwise              = insertFromCurrentNode n $ goRight(t, [])
+      where t = Node l x c r
+insertFromCurrentNode n (Node l x c r, ts) | bBoth                  = insertFromCurrentNode n $ goLeft(t, ts)
+                                           | not(bBoth)             = insertFromCurrentNode n $ goRight(t, ts)
+                                           | otherwise              = insertFromCurrentNode n $ goUp(t, ts)
+      where parent = fromJust $ getParentValue(ts)
+            bParent = n < parent
+            bValue = n < x
+            bBoth = bParent && bValue
+            t = Node l x c r

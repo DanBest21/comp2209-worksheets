@@ -1,16 +1,21 @@
--- Exercise 1
-data Tree a = Leaf a | Node (Tree a) a (Tree a)
+import Data.Graph
 
-occurs :: Ord a => a -> Tree a -> Bool
-occurs x (Leaf y) = compare x y == EQ
-occurs x (Node (l) y (r)) = (compare x y) == EQ || (occurs x l) || (occurs x r)
+-- The GODLIKE tree cleaner function
+x -: f = f x
+
+-- Exercise 1
+data Tree' a = Leaf' a | Node' (Tree' a) a (Tree' a)
+
+occurs :: Ord a => a -> Tree' a -> Bool
+occurs x (Leaf' y) = compare x y == EQ
+occurs x (Node' (l) y (r)) = (compare x y) == EQ || (occurs x l) || (occurs x r)
 
 -- Exercise 2
-foldTree :: (a -> b -> b) -> b -> Tree a -> b
-foldTree f v (Leaf x) = f x v
-foldTree f v (Node (l) x (r)) = f x (foldTree f (foldTree f v l) r)
+foldTree :: (a -> b -> b) -> b -> Tree' a -> b
+foldTree f v (Leaf' x) = f x v
+foldTree f v (Node' (l) x (r)) = f x (foldTree f (foldTree f v l) r)
 
-flatten :: Tree a -> [a]
+flatten :: Tree' a -> [a]
 flatten t = foldTree (:) [] t
 
 -- Exercise 3
@@ -62,19 +67,39 @@ fromFun (F g) = g
 -- is expecting a function from a -> b (?)
 
 -- Exercise 6
-data LTree a = Leaf' a | Node' (LTree a) (LTree a) 
+data LTree a = Leaf a | Node_ (LTree a) (LTree a) deriving (Show)
 data Direction a = L (LTree a) | R (LTree a)
 type Trail a = [Direction a]
 type Zipper a = (LTree a, Trail a)
 
 goLeft, goRight, goUp :: (LTree a, Trail a) -> (LTree a, Trail a)
-goLeft (Node' l r, ts) = (l, L r:ts)
-goRight (Node' l r, ts) = (r, R l:ts)
-goUp (t, L r : ts) = (Node' t r, ts)
-goUp (t, R l : ts) = (Node' l t, ts)
+goLeft (Node_ l r, ts) = (l, L r:ts)
+goRight (Node_ l r, ts) = (r, R l:ts)
+goUp (t, L r : ts) = (Node_ t r, ts)
+goUp (t, R l : ts) = (Node_ l t, ts)
+
+goRoot :: Zipper Int -> Zipper Int
+goRoot (t, []) = (t, [])
+goRoot z = goRoot $ goUp z
+
+goLeftmost :: Zipper Int -> Zipper Int
+goLeftmost (Leaf a, ts) = (Leaf a, ts)
+goLeftmost z = goLeftmost $ goLeft z
+
+goRightmost :: Zipper Int -> Zipper Int
+goRightmost (Leaf a, ts) = (Leaf a, ts)
+goRightmost z = goRightmost $ goRight z
+
+inc2L :: Zipper Int -> Zipper Int
+inc2L (Leaf a, ts) = goRoot (Leaf (a + 2), ts)
+inc2L z = inc2L $ z -: goLeftmost -: goUp -: goRight -: goLeftmost
+
+inc2R :: Zipper Int -> Zipper Int
+inc2R (Leaf a, ts) = goRoot (Leaf (a + 2), ts)
+inc2R z = inc2R $ z -: goRightmost -: goUp -: goLeft -: goRightmost
 
 inc2LR :: LTree Int -> LTree Int
--- inc2LR (Node' )
+inc2LR t = fst $ inc2R (inc2L (t, []))
 
 -- Exercise 7
 

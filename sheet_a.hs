@@ -108,22 +108,24 @@ goUp (t, R x c l : ts) = (Node l x (c+1) t, ts)
 
 getParentValue :: Trail a -> Maybe a
 getParentValue [] = Nothing
-getParentValue [L x c r] = Just (x)
-getParentValue [R x c r] = Just (x)
+getParentValue (L x c r : ts) = Just (x)
+getParentValue (R x c r : ts) = Just (x)
 
 mkTree :: Ord a => [a] -> Zipper a
 mkTree = foldl (\z -> \x -> insertFromCurrentNode x z) (Leaf,[])
 
 insertFromCurrentNode :: Ord a => a -> Zipper a -> Zipper a
 insertFromCurrentNode n (Leaf, ts) = ((Node (Leaf) n 1 (Leaf)), ts)
-insertFromCurrentNode n (Node l x c r, []) | n < x                  = insertFromCurrentNode n $ goLeft(t, [])
-                                           | otherwise              = insertFromCurrentNode n $ goRight(t, [])
+insertFromCurrentNode n (Node l x c r, []) | n < x     = insertFromCurrentNode n $ goLeft(t, [])
+                                           | otherwise = insertFromCurrentNode n $ goRight(t, [])
       where t = Node l x c r
-insertFromCurrentNode n (Node l x c r, ts) | bBoth                  = insertFromCurrentNode n $ goLeft(t, ts)
-                                           | not(bBoth)             = insertFromCurrentNode n $ goRight(t, ts)
-                                           | otherwise              = insertFromCurrentNode n $ goUp(t, ts)
+insertFromCurrentNode n (Node l x c r, ts) | bLeft     = insertFromCurrentNode n $ goLeft(t, ts)
+                                           | bRight    = insertFromCurrentNode n $ goRight(t, ts)
+                                           | otherwise = insertFromCurrentNode n $ goUp(t, ts)
       where parent = fromJust $ getParentValue(ts)
-            bParent = n < parent
+            bParent = x < parent
+            bParent' = n < parent
             bValue = n < x
-            bBoth = bParent && bValue
+            bLeft = (not(bParent || bParent') && bValue)
+            bRight = (bParent && bParent' && not(bValue))
             t = Node l x c r

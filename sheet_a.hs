@@ -113,8 +113,8 @@ getParentValue (R x c r : ts) = Just (x)
 
 getRootValue :: Trail a -> Maybe a
 getRootValue [] = Nothing
-getRootValue [L x c r, _] = Just (x)
-getRootValue [R x c r, _] = Just (x)
+getRootValue (L x c r : []) = Just (x)
+getRootValue (R x c r : []) = Just (x)
 getRootValue (L x c r : ts) = getRootValue ts
 getRootValue (R x c r : ts) = getRootValue ts
 
@@ -131,9 +131,10 @@ insertFromCurrentNode n (Node l x c r, ts) | bLeft     = insertFromCurrentNode n
                                            | otherwise = insertFromCurrentNode n $ goUp(t, ts)
       where parent = fromJust $ getParentValue ts
             root = fromJust $ getRootValue ts
-            bParent = x < parent
-            bParent' = n < parent
+            bRoot = n < root
+            bRoot' = x < root
+            bParent = n < parent
             bValue = n < x
-            bLeft = (not(bParent || bParent') && bValue)
-            bRight = (bParent && bParent' && not(bValue))
+            bLeft = (bValue && bRoot && bRoot' && bParent) || (not(bRoot) && not(bRoot') && bValue && not(bParent))
+            bRight = (not(bValue) && not(bRoot) && not(bRoot') && not(bParent)) || (bRoot && bRoot' && not(bValue) && bParent)
             t = Node l x c r

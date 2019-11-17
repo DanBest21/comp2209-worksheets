@@ -38,29 +38,32 @@ goRoot :: Zipper a -> Zipper a
 goRoot (t, []) = (t, [])
 goRoot z = goRoot $ goUp z
 
-getParentValue :: Trail a -> Maybe a
-getParentValue [] = Nothing
-getParentValue (L x c r : ts) = Just (x)
-getParentValue (R x c r : ts) = Just (x)
-
-insertInCorrectPosition :: Ord a => a -> Zipper a -> Zipper a
-insertInCorrectPosition n (Leaf, ts) = ((Node (Leaf) n 1 (Leaf)), ts)
-insertInCorrectPosition n (Node l x c r, []) | n == x    = (Node l x c r, [])
-                                             | n < x     = insertInCorrectPosition n $ goLeft(t, [])
-                                             | otherwise = insertInCorrectPosition n $ goRight(t, [])
+insertInCorrectPosition :: Ord a => a -> a -> Bool -> Zipper a -> Zipper a
+insertInCorrectPosition n p bUp (Leaf, ts) = ((Node (Leaf) n 1 (Leaf)), ts)
+insertInCorrectPosition n p bUp (Node l x c r, []) | n == x    = (Node l x c r, [])
+                                                   | n < x     = insertInCorrectPosition n x False $ goLeft(t, [])
+                                                   | otherwise = insertInCorrectPosition n x False $ goRight(t, [])
       where t = Node l x c r
-insertInCorrectPosition n (Node l x c r, ts) | n == x    = (Node l x c r, ts)
-                                             | bLeft     = insertInCorrectPosition n $ goLeft(t, ts)
-                                             | bRight    = insertInCorrectPosition n $ goRight(t, ts)
-                                             | otherwise = insertInCorrectPosition n $ goUp(t, ts)
-      where parent = fromJust $ getParentValue ts
-            bParent = n < parent
-            bValue = n < x
-            bLeft = (bValue && bParent) || (bValue && not(bParent))
-            bRight = (not(bValue) && not(bParent)) || (not(bValue) && bParent)
+insertInCorrectPosition n p (False) (Node l x c r, ts) | n == x    = (Node l x c r, ts)
+                                                       | bLeft     = insertInCorrectPosition n x False $ goLeft(t, ts)
+                                                       | bRight    = insertInCorrectPosition n x False $ goRight(t, ts)
+                                                       | otherwise = insertInCorrectPosition n x True $ goUp(t, ts)
+      where bPrevious = n < p
+            bCurrent = n < x
+            bLeft = (bPrevious && bCurrent) || (not(bPrevious) && bCurrent)
+            bRight = (not(bPrevious) && not(bCurrent)) || (bPrevious && not(bCurrent))
+            t = Node l x c r
+insertInCorrectPosition n p (True) (Node l x c r, ts) | n == x    = (Node l x c r, ts)
+                                                      | bLeft     = insertInCorrectPosition n x False $ goRight $ goLeft(t, ts)
+                                                      | bRight    = insertInCorrectPosition n x False $ goLeft $ goRight(t, ts)
+                                                      | otherwise = insertInCorrectPosition n x True $ goUp(t, ts)
+      where bPrevious = n < p
+            bCurrent = n < x
+            bLeft = (not(bPrevious) && bCurrent)
+            bRight = (bPrevious && not(bCurrent))
             t = Node l x c r
 
 insertFromCurrentNode :: Ord a => a -> Zipper a -> Zipper a
-insertFromCurrentNode n (Leaf, ts) = insertInCorrectPosition n (Leaf, ts)
+insertFromCurrentNode n (Leaf, ts) = insertInCorrectPosition n n True (Leaf, ts)
 insertFromCurrentNode n (Node l x c r, ts) | n == x    = (Node l x c r, ts)
-                                           | otherwise = insertInCorrectPosition n $ goRoot (Node l x c r, ts)
+                                           | otherwise = insertInCorrectPosition n x True $ (Node l x c r, ts)

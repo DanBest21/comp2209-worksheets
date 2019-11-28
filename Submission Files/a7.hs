@@ -22,8 +22,9 @@ type SMProg = [Instruction]
 instance NFData (Instruction)
 
 -- Exercise A7
-evalInst s [] = s
 evalInst :: Stack -> SMProg -> Stack
+evalInst [] p = error "Stack cannot be empty at start of instruction process."
+evalInst s [] = s
 evalInst (x : []) (Add : p) = error "Cannot perform Add operation on stack with one element!"
 evalInst (x : []) (Mul : p) = error "Cannot perform Mul operation on stack with one element!"
 evalInst (x : y : s) (Add : p) = evalInst ((x + y) : s) p

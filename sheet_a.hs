@@ -137,3 +137,26 @@ insertFromCurrentNode n (Node l x c r, ts) | bLeft     = insertFromCurrentNode n
             bLeft = (not(bParent || bParent') && bValue)
             bRight = (bParent && bParent' && not(bValue))
             t = Node l x c r
+
+-- Exercise A7
+data Instruction = Add | Mul | Dup | Pop
+type Stack = [Int]
+type SMProg = [Instruction]
+
+evalInst :: Stack -> SMProg -> Stack
+evalInst [] p = error "Stack cannot be empty at start of instruction process." 
+evalInst s [] = s
+evalInst (x : []) (Add : sm) = error "Cannot perform Add operation on stack with one element!"
+evalInst (x : []) (Mul : sm) = error "Cannot perform Mul operation on stack with one element!"
+evalInst (x : y : s) (Add : sm) = evalInst ((x + y) : s) sm
+evalInst (x : y : s) (Mul : sm) = evalInst ((x * y) : s) sm
+evalInst (x : s) (Dup : sm) = evalInst (x : x : s) sm
+evalInst (x : s) (Pop : sm) = evalInst s sm
+
+-- Exercise A8
+findMaxReducers :: Stack -> [SMProg]
+findMaxReducers (x : []) = []
+findMaxReducers (x : y : s) | x < 1              = ([Pop] ++ findMaxReducers (y : s)) : ([Add] ++ findMaxReducers ((x + y) : s))
+                            | (x + y) == (x * y) = ([Add] ++ findMaxReducers ((x + y) : s)) : ([Mul] ++ findMaxReducers ((x * y) : s))
+                            | (x + y) < (x * y)  = [Mul] ++ findMaxReducers ((x * y) : s)
+                            | otherwise          = [Add] ++ findMaxReducers ((x + y) : s)

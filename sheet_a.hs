@@ -144,7 +144,7 @@ insertFromCurrentNode n (Node l x c r, ts) | n == x    = (Node l x c r, ts)
                                            | otherwise = insertInCorrectPosition n x True $ (Node l x c r, ts)
 
 -- Exercise A7
-data Instruction = Add | Mul | Dup | Pop
+data Instruction = Add | Mul | Dup | Pop deriving (Show)
 type Stack = [Int]
 type SMProg = [Instruction]
 
@@ -159,9 +159,59 @@ evalInst (x : s) (Dup : sm) = evalInst (x : x : s) sm
 evalInst (x : s) (Pop : sm) = evalInst s sm
 
 -- Exercise A8
+negativeNumbers :: Stack -> [Int]
+negativeNumbers s = [ x | x <- s, x < 0 ]
+
+leastNegativeNumber :: Stack -> Int
+leastNegativeNumber s | list /= [] && length list `mod` 2 /= 0 = last $ sort $ list
+                      | otherwise                              = 0
+                  where list = negativeNumbers s
+
+nextNegativeNumber :: Stack -> Int
+nextNegativeNumber s = head $ negativeNumbers s
+
+negativeNumbersLeft :: Stack -> Int
+negativeNumbersLeft s = length $ negativeNumbers s
+
+findMaxReducersHelper :: Stack -> SMProg -> Int -> [SMProg]
+findMaxReducersHelper (x : []) acc n = [acc]
+findMaxReducersHelper (x : y : s) acc n | x == 0 && y == 0                            = (findMaxReducersHelper (y : s) pop n) ++ (findMaxReducersHelper ((x + y) : s) add n) ++ (findMaxReducersHelper ((x * y) : s) mul n)
+                                        | x == 0                                      = (findMaxReducersHelper (y : s) pop n) ++ (findMaxReducersHelper ((x + y) : s) add n)
+                                        | y == n && n /= 0                            = findMaxReducersHelper ((x + y) : s) add n
+                                        | x == n && n /= 0 && not(bNegative)          = findMaxReducersHelper (y : s) pop n
+                                        | abs (x + y) < abs (x * y)                   = findMaxReducersHelper ((x * y) : s) mul n
+                                        | otherwise                                   = findMaxReducersHelper ((x + y) : s) add n
+                  where pop = acc ++ [Pop]
+                        add = acc ++ [Add]
+                        mul = acc ++ [Mul]
+                        bNegative = x < 0 && y < 0
+                        
 findMaxReducers :: Stack -> [SMProg]
-findMaxReducers (x : []) = []
-findMaxReducers (x : y : s) | x < 1              = ([Pop] ++ findMaxReducers (y : s)) : ([Add] ++ findMaxReducers ((x + y) : s))
-                            | (x + y) == (x * y) = ([Add] ++ findMaxReducers ((x + y) : s)) : ([Mul] ++ findMaxReducers ((x * y) : s))
-                            | (x + y) < (x * y)  = [Mul] ++ findMaxReducers ((x * y) : s)
-                            | otherwise          = [Add] ++ findMaxReducers ((x + y) : s)
+findMaxReducers [] = []
+findMaxReducers s = findMaxReducersHelper s [] (leastNegativeNumber s)
+
+-- Exercise A9
+type BigStack = [Integer]
+
+bigEvalInst :: BigStack -> SMProg -> BigStack
+bigEvalInst [] p = error "Stack cannot be empty at start of instruction process." 
+bigEvalInst s [] = s
+bigEvalInst (x : []) (Add : sm) = error "Cannot perform Add operation on stack with one element!"
+bigEvalInst (x : []) (Mul : sm) = error "Cannot perform Mul operation on stack with one element!"
+bigEvalInst (x : y : s) (Add : sm) = bigEvalInst ((x + y) : s) sm
+bigEvalInst (x : y : s) (Mul : sm) = bigEvalInst ((x * y) : s) sm
+bigEvalInst (x : s) (Dup : sm) = bigEvalInst (x : x : s) sm
+bigEvalInst (x : s) (Pop : sm) = bigEvalInst s sm
+
+
+generateSequencesToLimit :: Int -> Int -> Int -> SMProg -> [SMProg]
+generateSequencesToLimit n i j acc | j == n        = [acc]
+                                   | i == j        = generateSequencesToLimit n (i + 1) j dup
+                                   | i == n        = generateSequencesToLimit n i (j + 1) mul
+                                   | otherwise     = generateSequencesToLimit n (i + 1) j dup ++ generateSequencesToLimit n i (j + 1) mul
+                  where dup = acc ++ [Dup]
+                        mul = acc ++ [Mul]
+
+optimalPower :: Int -> SMProg
+optimalPower n | n <= 0    = error "Input value cannot be 0 or below!"
+               | otherwise = head [ sq | i <- [0..], sq <- generateSequencesToLimit i 0 0 [], (head $ bigEvalInst [2] sq) == (2 ^ n) ]

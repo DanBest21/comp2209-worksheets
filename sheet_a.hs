@@ -203,6 +203,9 @@ bigEvalInst (x : y : s) (Mul : sm) = bigEvalInst ((x * y) : s) sm
 bigEvalInst (x : s) (Dup : sm) = bigEvalInst (x : x : s) sm
 bigEvalInst (x : s) (Pop : sm) = bigEvalInst s sm
 
+closest2nExponent :: Int -> Int -> Int -> Int
+closest2nExponent n x i | n >= x    = closest2nExponent n (x * 2) (i + 1)
+                        | otherwise = i
 
 generateSequencesToLimit :: Int -> Int -> Int -> SMProg -> [SMProg]
 generateSequencesToLimit n i j acc | j == n        = [acc]
@@ -214,4 +217,4 @@ generateSequencesToLimit n i j acc | j == n        = [acc]
 
 optimalPower :: Int -> SMProg
 optimalPower n | n <= 0    = error "Input value cannot be 0 or below!"
-               | otherwise = head [ sq | i <- [0..], sq <- generateSequencesToLimit i 0 0 [], (head $ bigEvalInst [2] sq) == (2 ^ n) ]
+               | otherwise = head [ sq | i <- [(closest2nExponent n 2 0)..], sq <- generateSequencesToLimit i 0 0 [], (head $ bigEvalInst [2] sq) == (2 ^ n) ]
